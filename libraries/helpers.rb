@@ -163,6 +163,13 @@ module MysqlCookbook
       return false if version.split('.')[1].to_i < 7
       true
     end
+    
+    def v576plus
+      if node['mysql']['576plus']
+        return true
+      end
+      false
+    end
 
     def default_include_dir
       "#{etc_dir}/conf.d"
@@ -179,14 +186,18 @@ module MysqlCookbook
       # Note: shell-escaping passwords in a SQL file may cause corruption - eg
       # mysql will read \& as &, but \% as \%. Just escape bare-minimum \ and '
       sql_escaped_password = root_password.gsub('\\') { '\\\\' }.gsub("'") { '\\\'' }
-
+      cmd = if v576plus
+              "ALTER USER 'root'@'localhost' IDENTIFIED BY '#{sql_escaped_password}'" 
+            else
+              "UPDATE mysql.user SET #{password_column_name}=PASSWORD('#{sql_escaped_password}')#{password_expired} WHERE user = 'root'"
+            end
       <<-EOS
         set -e
         rm -rf /tmp/#{mysql_name}
         mkdir /tmp/#{mysql_name}
 
         cat > /tmp/#{mysql_name}/my.sql <<-'EOSQL'
-UPDATE mysql.user SET #{password_column_name}=PASSWORD('#{sql_escaped_password}')#{password_expired} WHERE user = 'root';
+#{cmd};
 DELETE FROM mysql.user WHERE USER LIKE '';
 DELETE FROM mysql.user WHERE user = 'root' and host NOT IN ('127.0.0.1', 'localhost');
 FLUSH PRIVILEGES;
@@ -274,7 +285,7 @@ EOSQL
     end
 
     def record_init
-      cmd = v56plus ? mysqld_bin : mysqld_safe_bin
+      cmd = v56plus || v576plus ? mysqld_bin : mysqld_safe_bin
       cmd << " --defaults-file=#{etc_dir}/my.cnf"
       cmd << " --init-file=/tmp/#{mysql_name}/my.sql"
       cmd << ' --explicit_defaults_for_timestamp' if v56plus
