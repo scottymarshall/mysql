@@ -11,6 +11,7 @@ ExecStart=<%= @mysqld_bin %> --defaults-file=<%= @etc_dir %>/my.cnf --basedir=<%
 ExecStartPost=/usr/libexec/mysql-<%= @config.instance %>-wait-ready $MAINPID
 TimeoutSec=300
 PrivateTmp=true
+LimitNOFILE=<%= @config.limit_no_file%>
 
 [Install]
 WantedBy=multi-user.target

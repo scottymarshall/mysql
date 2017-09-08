@@ -10,6 +10,7 @@ module MysqlCookbook
     property :pid_file, String, default: lazy { default_pid_file }, desired_state: false
     property :port, [String, Integer], default: '3306', desired_state: false
     property :socket, String, default: lazy { default_socket_file }, desired_state: false
+    property :limit_no_file, [String, Integer], default: '1024', desired_state: false
     property :tmp_dir, String, desired_state: false
 
     alias socket_file socket
