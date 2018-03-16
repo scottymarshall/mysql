@@ -2,13 +2,6 @@
 
 This file is used to list changes made in each version of the mysql cookbook.
 
-## 8.5.1 (2017-07-11)
-- Added support for systemd LimitNOFILE
-
-## 8.5.0 (2017-07-10)
-
-- Added support for systemd on 5.7.6 or later on rhel
-
 ## 8.4.0 (2017-05-30)
 
 - Fix client/server install on Amazon Linux and add testing
